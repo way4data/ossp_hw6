@@ -7,4 +7,4 @@ services:
     ports:
       - "80:80"
     production:
-      image: ${DOCKER_USER_ID}/ossp6:${BUILD_NUMBER}
+      image: ${DOCKER_USER_ID}/hw6:${BUILD_NUMBER}
