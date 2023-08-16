@@ -1,0 +1,56 @@
+pipeline {
+    agent any  
+
+	triggers {
+			pollSCM('*/3 * * * *')
+	} 
+
+    environment {
+        DOCKER = credentials('dockerhub')
+        
+    } 
+
+    stages {
+        stage('Prepare') {
+					agent any 
+	
+                    steps {
+											
+						    git url : 'https://github.com/junghye01/OSSPrac-Final.git',
+									branch : 'main',
+									credentialsId: 'gittest'
+                
+            }
+        }
+
+
+        stage('Build') {
+            
+            steps {
+                dir('/var/jenkins_home/workspace/finalProject@2'){
+                    sh 'docker-compose build finalProject'
+            }
+        }
+            
+        }
+
+        stage('Tag') {
+            steps {
+                script {
+                    sh "docker tag ${DOCKER_USR}/ossp_week12 ${DOCKER_USR}/ossp_week12:${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                script {
+                    sh "docker login -u ${DOCKER_USR} -p ${DOCKER_PSW}"
+                    sh "docker push ${DOCKER_USR}/ossp_week12:${BUILD_NUMBER}"
+                }
+            }
+        }
+
+       
+    }
+}
