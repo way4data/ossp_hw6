@@ -1,0 +1,54 @@
+# 2023. 10. 26 by KS Lee
+
+pipeline {
+    agent any  
+
+	triggers {
+			pollSCM('H/3 * * * *')
+	} 
+
+    environment {
+        DOCKER = credentials('docker-hub')
+        
+    } 
+
+    stages {
+        stage('Prepare') {
+						agent any 
+	
+            steps {
+											
+						    git url : 'https://github.com/way4data/ossp_hw6',
+									branch : 'main',
+									credentialsId: 'docker-hub'
+                
+            }
+        }
+
+
+        stage('Build') {
+            steps {
+                dir('/var/jenkins_home/workspace/hw6'){
+                    sh 'docker compose build python-app'
+                }
+            }
+        }
+
+        stage('Tag') {
+            steps {
+                script {
+                    sh "docker tag hw6-python-app ${DOCKER_USR}/hw6-python-app:${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                script {
+                    sh "docker login -u $DOCKER_USR -p $DOCKER_PSW"
+                    sh "docker push ${DOCKER_USR}/hw6-python-app:${BUILD_NUMBER}"
+                }
+            }
+        }
+    }
+}
